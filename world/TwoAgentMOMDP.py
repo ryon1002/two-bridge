@@ -50,16 +50,15 @@ class TwoAgentMOMDP(object):
             aVector[x] = np.zeros((0, self.y))
             for a in range(self.a):
                 aiList = []
-                aiLenList = []
                 nxs = self.t[:, a, x]
                 valid_nxs = np.where(np.sum(nxs, axis=0) > 0)[0]
                 for nx in valid_nxs:
                     aiList.append(nxs[:, nx] * self.aVector[nx])
-                    aiLenList.append(range(len(self.aVector[nx])))
-        
-                aiList2 = np.zeros((0, self.y))
-                for i in itertools.product(*aiLenList):
-                    aiList2 = np.vstack((aiList2, np.sum([aiList[n][j] for n, j in enumerate(i)], axis=0)))
+                aiLenList = [len(aiList[i]) for i in range(len(aiList))]
+                
+                aiList2 = np.zeros((np.prod(aiLenList), self.y))
+                for m, i in enumerate(itertools.product(*[range(l) for l in aiLenList])):
+                    aiList2[m] = np.sum([aiList[n][j] for n, j in enumerate(i)], axis=0)
                 aiList2 = self.uniqueFowRaw(aiList2)
                 aVector[x] = np.vstack((aVector[x], self.r[a, x] + aiList2))
         self.aVector = {x:self.prune(vector, bs) for x, vector in aVector.viewitems()} if bs is not None else aVector

@@ -13,11 +13,7 @@ class Application():
         
         self.bridge = [15, 19]
         self.agentState = 2
-#         self.agentState = 10
         self.sidekickState = 22
-#         self.sidekickState = 16
-#         self.sidekickState = 16
-#         self.sidekickState = 20
         self.goal = 32
         
         self.agents = []
@@ -44,8 +40,11 @@ class Application():
         self.b = np.concatenate(([b1], [b2]), axis=0).T
 
         import pickle
+        import datetime
+        start = datetime.datetime.now()
         self.collaborate.calcAvectorWithA(15, self.b)
-        pickle.dump(self.collaborate.aVectorA, open('aVectorA.pkl', mode='w'))
+        print datetime.datetime.now() - start
+#         pickle.dump(self.collaborate.aVectorA, open('aVectorA.pkl', mode='w'))
 #         self.collaborate.aVectorA = pickle.load(open('aVectorA.pkl', mode='r'))
         
         self.belief = np.ones((len(self.bridge))) / len(self.bridge)  
