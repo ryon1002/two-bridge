@@ -34,18 +34,18 @@ class Application():
         
         self.collaborate = TwoAgentMOMDP.TwoAgentMOMDP(self.agents, self.sidekick, self.bridge, self.goal)
         self.collaborateState = self.agents[0].shrinkMap[self.agentState] * self.sidekick.s + self.sidekick.shrinkMap[self.sidekickState]
-#         b1 = np.arange(0, 1.01, 0.05)
-        b1 = np.arange(0, 1.01, 0.1)
+        b1 = np.arange(0, 1.01, 0.05)
+#         b1 = np.arange(0, 1.01, 0.1)
         b2 = 1 - b1
         self.b = np.concatenate(([b1], [b2]), axis=0).T
 
         import pickle
         import datetime
         start = datetime.datetime.now()
-        self.collaborate.calcAvectorWithA(15, self.b)
+#         self.collaborate.calcAvector(20, self.b, True)
         print datetime.datetime.now() - start
 #         pickle.dump(self.collaborate.aVectorA, open('aVectorA.pkl', mode='w'))
-#         self.collaborate.aVectorA = pickle.load(open('aVectorA.pkl', mode='r'))
+        self.collaborate.aVectorA = pickle.load(open('aVectorA.pkl', mode='r'))
         
         self.belief = np.ones((len(self.bridge))) / len(self.bridge)  
         
