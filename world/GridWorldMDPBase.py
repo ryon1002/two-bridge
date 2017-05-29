@@ -1,13 +1,13 @@
 import numpy as np
-import Mdp
+from core import MDP
 
-class GridWorldMDPBase(Mdp.Mdp):
+class GridWorldMDPBase(MDP.MDP):
     dirActionIdx = {"^":np.array([1, 0]), "<":np.array([0, -1]), ">":np.array([0, 1]), "v":np.array([-1, 0]), "o":np.array([0, 0])}
     
     def __init__(self, xNum, yNum, prob=1.0, errProb=0.0, **kwargs):
         self.aMap = {0:"^", 1:"<", 2:">", 3:"v", 4:"o"}
         self.shape = (yNum, xNum)
-        Mdp.Mdp.__init__(self, yNum * xNum, len(self.aMap), **kwargs)
+        MDP.MDP.__init__(self, yNum * xNum, len(self.aMap), **kwargs)
         a_t = np.ones((self.a, self.a)) * errProb
         np.fill_diagonal(a_t, prob)
         for s in range(self.s):

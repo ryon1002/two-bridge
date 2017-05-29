@@ -1,6 +1,6 @@
 import numpy as np
 
-class Mdp(object):
+class MDP(object):
     def __init__(self, s, a, d=0.99, inits=[0], **kwargs):
         self.s = s
         self.inits = inits
@@ -38,3 +38,6 @@ class Mdp(object):
     def pickInitialState(self):
         return np.random.choice(self.inits)
 
+    def softmax(self, arr, beta):
+        ret = np.exp(arr * beta)
+        return ret / np.sum(ret, axis=0)

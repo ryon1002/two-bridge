@@ -17,12 +17,6 @@ class FieldMDP(GridWorldMDPBase.GridWorldMDPBase):
                 self.t[a, s, s] = 1
         self.r[:4, :, :] = -0.01
 
-    def setAgent(self, s):
-        self.agentState = s
-
-    def setSidekick(self, s):
-        self.sidekickState = s
-
     def setGoal(self, g):
         self.setTerminateStates(g)
         self.r[:, :, g] = 1
@@ -31,7 +25,7 @@ class FieldMDP(GridWorldMDPBase.GridWorldMDPBase):
     def makeRoad(self, s, reward=-0.01):
         pos = np.array(np.unravel_index(s, self.shape))
         for offset in np.array([[-1, 0], [1, 0], [0, -1], [0, 1]]):
-            s2 = np.ravel_multi_index(pos + offset, self.shape)
+            s2 = np.ravel_multi_index(pos + offset, self.shape, mode="clip")
             if self.fmap[s2] == 0: self.connect(s, s2, reward)
 
     def connect(self, s1, s2, reward):
@@ -48,32 +42,29 @@ class FieldMDP(GridWorldMDPBase.GridWorldMDPBase):
         self.t[a21, s2, s1] = 1
         self.r[a21, s2, s1] = reward
 
+    def shrinkState(self, startState):
+        reachableState = self.calcReachableState(startState)
+        self.shrinkMap = {s:n for n, s in enumerate(reachableState)}
+        self.i_shrinkMap = {n:s for n, s in enumerate(reachableState)}
+        self.s = len(reachableState)
+        self.t = np.array([[self.t[a, s, reachableState] for s in reachableState] for a in range(self.t.shape[0])])
+        self.r = np.array([[self.r[a, s, reachableState] for s in reachableState] for a in range(self.r.shape[0])])
+    
+    def calcReachableState(self, startState):
+        open = set([startState])
+        result = set()
+        while len(open) > 0:
+            s = open.pop()
+            result.add(s)
+            nextStates = set(np.where(np.sum(self.t[:, s, :], axis=0))[0])
+            nextStates.difference_update(open)
+            nextStates.difference_update(result)
+            open.update(nextStates)
+        return np.array(sorted(result))
+
     def printMap(self):
         sMap = np.zeros_like(self.map, dtype=object)
         for s in range(self.s):
             y, x = np.unravel_index(s, self.shape)
             sMap[self.shape[0] - y - 1, x] = (s, int(self.map[self.shape[0] - y - 1, x]))
         print sMap
-
-    def showWorld(self):
-        for s in range(self.s):
-            (y, x) = np.unravel_index(s, self.shape)
-            color = "cyan" if self.fmap[s] == 1 else "w"
-            if s in [43, 47] :  color = "lightcyan"
-            plt.gca().add_patch(patches.Rectangle((x, y), 1, 1, facecolor=color))
-        plt.ylim(0, self.shape[0])
-        plt.xlim(0, self.shape[1])
-        plt.tick_params(labelbottom="off", labelleft="off")
-        plt.gca().set_aspect('equal', adjustable='box')
-        plt.gca().add_patch(patches.Circle(np.unravel_index(self.agentState % 81, self.shape)[::-1] + np.array([0.5, 0.5]), radius=0.1, facecolor="red"))        
-#         plt.gca().add_patch(patches.Circle(np.unravel_index(self.sidekickState % 81, self.shape)[::-1] + np.array([0.5, 0.5]), radius=0.1, facecolor="blue"))        
-        y, x = np.unravel_index(self.sidekickState % 81, self.shape)
-        plt.gca().add_patch(patches.Rectangle((x + 0.1, y + 0.1), 0.8, 0.8, facecolor="g"))
-
-    def move(self, event):
-        if event.key in self.keyaMap:
-            prevState = self.agentState
-            self.agentState = np.argmax(self.t[self.keyaMap[event.key], self.agentState])
-            print self.agentState
-            return prevState, self.keyaMap[event.key]
-        return None
