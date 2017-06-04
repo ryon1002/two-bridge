@@ -106,7 +106,7 @@ class Application():
         plt.bar(np.arange(len(self.belief)), self.belief, color="orange")
 
     def updateBelief(self, a, s, n_s):
-        self.belief *= self.collaborate.t[:, a, s, n_s]
+        self.belief *= self.collaborate.tx[:, a, s, n_s]
         self.belief /= np.sum(self.belief)
 
     def move(self, event):

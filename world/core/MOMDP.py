@@ -4,8 +4,9 @@ import itertools
 class MOMDP(object):    
     def preCulc(self):
         # For calc Avector
-        self.valid_nxs = np.sum(self.t, axis=0) > 0
-        self.valid_nxs = {a:{x:np.where(self.valid_nxs[a][x])[0] for x in range(self.valid_nxs.shape[1])} for a in range(self.valid_nxs.shape[0])}
+        self.valid_nx_x = np.sum(self.tx, axis=0) > 0
+        self.valid_nx_x = {a:{x:np.where(self.valid_nx_x[a][x])[0] for x in range(self.valid_nx_x.shape[1])} for a in range(self.valid_nx_x.shape[0])}
+        self.valid_nx_y = {a:{x:np.sum(self.ty[:, a, x, :], axis=0) for x in range(self.x)} for a in range(self.a)}
 
     def calcAvector(self, d=1, bs=None, withA=True):
         if d == 1:
@@ -17,8 +18,8 @@ class MOMDP(object):
         for x in range(self.x):
             aVector[x] = {}
             for a in range(self.a):
-                nxs = self.t[:, a, x]
-                aiList = [nxs[:, nx] * self.aVector[nx] for nx in self.valid_nxs[a][x]]
+                nx_x = self.tx[:, a, x]
+                aiList = [nx_x[:, nx] * self.aVector[nx] * self.valid_nx_y[a][x] for nx in self.valid_nx_x[a][x]]
                 aiLenList = [len(aiList[i]) for i in range(len(aiList))]
                 
                 aiList2 = np.zeros((np.prod(aiLenList), self.y))

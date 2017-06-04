@@ -7,6 +7,12 @@ class TwoAgentMOMDP_Bridge(TwoAgentMOMDP.TwoAgentMOMDP):
         self.makeTransition(sidekick, agents)
         self.addSinkState(None, agents[0].shrinkMap[goal])
         
+        self.ty = np.zeros((self.y, self.a, self.x, self.y))
+        for y in range(self.y):
+            for x in range(self.x):
+                for a in range(self.a):
+                    self.ty[y, a, x, y] = 1
+        
         self.r = np.zeros((self.a, self.x, self.y))
         goal = agents[0].shrinkMap[goal]
         self.r[:4, :, :] = -0.01

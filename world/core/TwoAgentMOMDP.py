@@ -6,7 +6,8 @@ class TwoAgentMOMDP(MOMDP.MOMDP):
         self.y = len(targets)
         self.x = main.s * targets[0].s
         self.a = main.a
-        self.t = np.zeros((self.y, self.a, self.x, self.x))
+        self.tx = np.zeros((self.y, self.a, self.x, self.x))
+        self.ty = np.zeros((self.y, self.a, self.x, self.y))
         self.main_s = main.s
         self.target_s = targets[0].s
 
@@ -16,18 +17,18 @@ class TwoAgentMOMDP(MOMDP.MOMDP):
                 for t_i in np.where(t > 0)[0]:
                     for m_s in range(main.s):
                         for a in range(self.a):
-                            self.t[y, a, self.getState(m_s, t_s), self.getState(None, t_i)] = main.t[a, m_s] * t[t_i]
+                            self.tx[y, a, self.getState(m_s, t_s), self.getState(None, t_i)] = main.t[a, m_s] * t[t_i]
     
     def addSinkState(self, mainState, targetState):
         self.x = self.x + 1
-        tmpt = self.t
-        self.t = np.zeros((self.y, self.a, self.x, self.x))
-        self.t[:, :, :-1, :-1] = tmpt
+        tmptx = self.tx
+        self.tx = np.zeros((self.y, self.a, self.x, self.x))
+        self.tx[:, :, :-1, :-1] = tmptx
         for y in range(self.y):
             for a in range(self.a):
-                self.t[y, a, self.getState(mainState, targetState), 0:-1] = 0
-                self.t[y, a, self.getState(mainState, targetState), -1] = 1
-            self.t[y, :, -1, -1] = 1
+                self.tx[y, a, self.getState(mainState, targetState), 0:-1] = 0
+                self.tx[y, a, self.getState(mainState, targetState), -1] = 1
+            self.tx[y, :, -1, -1] = 1
     
     def getState(self, mainState, targetState):
         if self.mainFirst:
