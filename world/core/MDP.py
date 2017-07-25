@@ -1,9 +1,10 @@
 import numpy as np
 
+
 class MDP(object):
-    def __init__(self, s, a, d=0.99, inits=[0], **kwargs):
+    def __init__(self, s, a, d=0.99, init_states=(0,), **kwargs):
         self.s = s
-        self.inits = inits
+        self.init_states = init_states
         self.a = a
         self.d = d
         self.t = np.zeros((self.a, self.s, self.s))
@@ -11,11 +12,12 @@ class MDP(object):
         self.q = np.zeros((self.s, self.a))
         self.terminateStates = None
 
-    def getNextState(self, action, state):
+    def get_next_state(self, action, state):
         return np.random.choice(np.arange(len(self.t[0])), p=self.t[action, state])
 
-    def doValueItaration(self):
+    def do_value_iteration(self):
         v = np.zeros(self.t.shape[1])
+        n_v = 0
         for _i in range(500):
             n_v = np.sum(self.t * self.r + self.t * v * self.d, axis=2)
             n_v = np.max(n_v, axis=0)
@@ -25,19 +27,20 @@ class MDP(object):
             v = n_v
         self.q = np.sum(self.t * self.r + self.t * n_v * self.d, axis=2)
 
-    def isTerminate(self, s):
+    def is_terminate(self, s):
         if self.terminateStates is not None and s in self.terminateStates:
             return True
         return False
 
-    def setTerminateStates(self, s):
+    def set_terminate_states(self, s):
         self.terminateStates = s
         self.t[:, s, :] = 0
         self.t[:, s, s] = 1
 
-    def pickInitialState(self):
-        return np.random.choice(self.inits)
+    def pick_initial_state(self):
+        return np.random.choice(self.init_states)
 
-    def softmax(self, arr, beta):
+    @staticmethod
+    def softmax(arr, beta):
         ret = np.exp(arr * beta)
         return ret / np.sum(ret, axis=0)
