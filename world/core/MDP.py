@@ -10,7 +10,7 @@ class MDP(object):
         self.t = np.zeros((self.a, self.s, self.s))
         self.r = np.zeros((self.a, self.s, self.s))
         self.q = np.zeros((self.s, self.a))
-        self.terminateStates = None
+        self.terminate_states = set()
 
     def get_next_state(self, action, state):
         return np.random.choice(np.arange(len(self.t[0])), p=self.t[action, state])
@@ -28,12 +28,12 @@ class MDP(object):
         self.q = np.sum(self.t * self.r + self.t * n_v * self.d, axis=2)
 
     def is_terminate(self, s):
-        if self.terminateStates is not None and s in self.terminateStates:
+        if self.terminate_states is not None and s in self.terminate_states:
             return True
         return False
 
     def set_terminate_states(self, s):
-        self.terminateStates = s
+        self.terminate_states.add(s)
         self.t[:, s, :] = 0
         self.t[:, s, s] = 1
 

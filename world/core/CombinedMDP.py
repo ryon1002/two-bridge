@@ -1,3 +1,4 @@
+import math
 import numpy as np
 import MDP
 
@@ -18,13 +19,21 @@ class CombinedMDP(MDP.MDP):
 
     def get_state(self, mdp1_state, mdp2_state, reverse=False):
         if reverse:
-            mdp2_state + mdp1_state * self.mdp_s[1]
+            return mdp2_state + mdp1_state * self.mdp_s[1]
         return mdp1_state + mdp2_state * self.mdp_s[0]
 
     def get_action(self, mdp1_action, mdp2_action, reverse=False):
         if reverse:
-            mdp2_action + mdp1_action * self.mdp_a[1]
+            return mdp2_action + mdp1_action * self.mdp_a[1]
         return mdp1_action + mdp2_action * self.mdp_a[0]
+
+    def get_individual_state(self, state, reverse=False):
+        if reverse:
+            return int(math.floor(state / self.mdp_s[1])), state % self.mdp_s[1]
+        return state % self.mdp_s[0], int(math.floor(state / self.mdp_s[0]))
+
+    def get_next_state(self, mdp1_action, mdp2_action, state):
+        return super(CombinedMDP, self).get_next_state(self.get_action(mdp1_action, mdp2_action), state)
 
     def get_transition_with_others_policy(self, index, policy):
         other = 1 - index
