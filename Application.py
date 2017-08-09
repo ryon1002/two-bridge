@@ -33,7 +33,7 @@ class Application(object):
         self.b = np.concatenate(([b1], [1 - b1]), axis=0).T
 
         # start = datetime.datetime.now()
-        # self.collaborate.calc_a_vector(10, self.b, True)
+        self.collaborate.calc_a_vector(10, self.b, True)
         # check_vector = pickle.load(open('aVector.pkl', mode='r'))
         # # print check_vector[0]
         # for s, aq in self.collaborate.a_vector_a.viewitems():
@@ -47,7 +47,7 @@ class Application(object):
         # exit()
         # print datetime.datetime.now() - start
         # # pickle.dump(self.collaborate.a_vector_a, open('aVector.pkl', mode='w'))
-        self.collaborate.a_vector_a = pickle.load(open('aVector.pkl', mode='r'))
+        # self.collaborate.a_vector_a = pickle.load(open('aVector.pkl', mode='r'))
 
         self.belief = np.ones(self.collaborate.y) / self.collaborate.y
 

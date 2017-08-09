@@ -7,9 +7,6 @@ class TwoAgentMOMDP(MOMDP.MOMDP):
     def __init__(self, mdp1, mdp2, main_index, other_policies):
         self.baseMDP = CombinedMDP.CombinedMDP(mdp1, mdp2)
         super(TwoAgentMOMDP, self).__init__(self.baseMDP.s, len(other_policies), self.baseMDP.mdp_a[main_index])
-        self.main_s = mdp1.s
-        self.target_s = mdp2.s
-
         for y, policy in enumerate(other_policies):
             self.tx[y] = self.baseMDP.get_transition_with_others_policy(main_index, policy)
 
