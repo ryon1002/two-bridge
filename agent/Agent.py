@@ -2,11 +2,10 @@ import numpy as np
 
 
 class Agent(object):
-    def __init__(self, world):
-        self.world = world
-
-    def init_state(self):
-        return 0
+    # def __init__(self, world):
+    #     self.world = world
+    # def init_state(self):
+    #     return 0
 
     def calc_policy(self, select_rule, horizon=10000, **kwargs):
         if select_rule == "greedy":
@@ -95,16 +94,29 @@ class Agent(object):
         arr_max = np.max(arr, axis=axis)
         return arr_max + np.log(np.sum(np.exp(arr - arr_max), axis=axis))
 
-    def move(self, start_state=None, horizon=100):
-        state = start_state if start_state is not None else self.init_state()
+    # def move(self, start_state=None, horizon=100):
+    #     state = start_state if start_state is not None else self.init_state()
+    #     states = [state]
+    #     actions = []
+    #     for _i in range(horizon):
+    #         action = np.random.choice(np.arange(self.world.a), p=self.policy[:, state])
+    #         state = self.world.get_next_state(action, state)
+    #         actions.append(action)
+    #         states.append(state)
+    #         if self.world.is_terminate(state):
+    #             break
+    #     return states, actions
+
+    def move(self, mdp, policy, start_state, horizon=100):
+        state = start_state
         states = [state]
         actions = []
         for _i in range(horizon):
-            action = np.random.choice(np.arange(self.world.a), p=self.policy[:, state])
-            state = self.world.get_next_state(action, state)
+            action = np.random.choice(np.arange(mdp.a), p=policy[:, state])
+            state = mdp.get_next_state(action, state)
             actions.append(action)
             states.append(state)
-            if self.world.is_terminate(state):
+            if mdp.is_terminate(state):
                 break
         return states, actions
 

@@ -14,6 +14,19 @@ class ValueIteration(object):
         policy = np.exp(q * beta)
         return policy / np.sum(policy, axis=0)
 
+    def get_soft_greedy_policy(self, mdp, beta=1, horizon=10000):
+        log_policy = self.soft_value_iteration(mdp.t, mdp.r, mdp.d)
+        policy = np.exp(log_policy)
+        return policy / np.sum(policy, axis=0)
+
+    def value_iteration(self, t, r, d, horizon=10000):
+        q, _ = self._value_iteration_base(t, r, d, np.max, horizon)
+        return q
+
+    def soft_value_iteration(self, t, r, d, horizon=10000):
+        q, v = self._value_iteration_base(t, r, d, self.softmax, horizon)
+        return q - v
+
     @staticmethod
     def _value_iteration_base(t, r, d, func, horizon=10000):
         v = np.zeros(t.shape[1])
@@ -26,10 +39,6 @@ class ValueIteration(object):
                 break
             v = n_v
         return r + np.dot(td, v), v
-
-    def value_iteration(self, t, r, d, horizon=10000):
-        q, _ = self._value_iteration_base(t, r, d, np.max, horizon)
-        return q
 
     @staticmethod
     def softmax(arr, axis):

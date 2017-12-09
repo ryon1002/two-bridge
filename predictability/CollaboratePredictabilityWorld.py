@@ -12,9 +12,9 @@ class CollaboratePredictabilityWorld(object):
             cost_func = self.single_optimal_assign_cost
         return max(cost_func(o_assign[0], pre_cond[0]), cost_func(o_assign[1], pre_cond[1]))
 
-    def orderd_assign_cost(self, o_assign, pre_cond):
-        return max(self.single_orderd_assign_cost(o_assign[0], pre_cond[0]),
-                    self.single_orderd_assign_cost(o_assign[1], pre_cond[1]))
+    def orderd_assign_cost(self, o_assign, pre_cond, true_cost=0):
+        return max(self.single_orderd_assign_cost(o_assign[0], pre_cond[0], true_cost),
+                   self.single_orderd_assign_cost(o_assign[1], pre_cond[1], true_cost))
 
     def single_orderd_assign_cost(self, o_assign, pre_cond):
         raise NotImplementedError

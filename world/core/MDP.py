@@ -1,16 +1,25 @@
 import numpy as np
-
+import scipy.sparse
 
 class MDP(object):
-    def __init__(self, s, a, d=0.99, init_states=(0,), **kwargs):
+    def __init__(self, s, a, d=0.99, **kwargs):
         self.s = s
-        self.init_states = init_states
+        self.init_states = kwargs["init_states"] if "init_states" in kwargs else (0, )
         self.a = a
         self.d = d
-        self.t = np.zeros((self.a, self.s, self.s))
-        self.r = np.zeros((self.a, self.s, self.s))
-        self.q = np.zeros((self.s, self.a))
+        self.sparse = False
+
+        if "sparse" in kwargs:
+            self.sparse = True
+            self.t = [scipy.sparse.lil_matrix((self.s, self.s)) for _ in range(self.a)]
+            self.r = [scipy.sparse.lil_matrix((self.s, self.s)) for _ in range(self.a)]
+            self.q = scipy.sparse.lil_matrix((self.a, self.s))
+        else:
+            self.t = np.zeros((self.a, self.s, self.s))
+            self.r = np.zeros((self.a, self.s, self.s))
+            self.q = np.zeros((self.s, self.a))
         self.terminate_states = set()
+
 
     def get_next_state(self, action, state):
         return np.random.choice(np.arange(len(self.t[0])), p=self.t[action, state])
