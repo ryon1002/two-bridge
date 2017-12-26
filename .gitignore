@@ -5,3 +5,4 @@ org.eclipse.*
 solver/ext/*.exe
 .idea/*
 .idea
+vcs.xml
