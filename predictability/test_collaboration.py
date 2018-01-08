@@ -11,7 +11,7 @@ class TestCollaboration(unittest.TestCase):
         human, agent = (4, 13), (1, 1)
         world = itempick.ItemPickWorldItem(size, items, human, agent)
 
-        test = world.prob_reward__action_dist()
+        test = world.p_r__a()
         expect = np.array([[0.39247995, 0.18633144, 0.42118861],
                            [0.15936728, 0.65741506, 0.18321765],
                            [0.71510567, 0.25453341, 0.03036092],
@@ -26,7 +26,7 @@ class TestCollaboration(unittest.TestCase):
         human, agent = (5, 11), (1, 1)
         world = itempick.ItemPickWorldMove(size, items, human, agent)
 
-        test = world.prob_subgoal__action(world, 1)
+        test = world._p_item__move(1)
         expect = np.array([[0.27684366, 0.22337326, 0.03746672, 0.22337326],
                            [0.17142241, 0.13831337, 0.17142241, 0.13831337],
                            [0.03746672, 0.22337326, 0.27684366, 0.22337326],

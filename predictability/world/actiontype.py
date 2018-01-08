@@ -27,14 +27,10 @@ class AssignAction(object):
     @property
     def all_action_seq(self):
         if self._all_action_seq is None:
-            self.all_action_seq = "Dummy"
+            self._all_action_seq = [self.start_point.add_raw_assign((order[:i], order[i:]))
+                                    for order in itertools.permutations(self.item_ids)
+                                    for i in range(len(self.item_ids) + 1)]
         return self._all_action_seq
-
-    @all_action_seq.setter
-    def all_action_seq(self, _):
-        self._all_action_seq = [self.start_point.add_raw_assign((order[:i], order[i:]))
-                                for order in itertools.permutations(self.item_ids)
-                                for i in range(len(self.item_ids) + 1)]
 
     def get_all_action_seq(self, conditions=Assign(((), ()))):
         conditions = self.start_point + conditions
@@ -44,7 +40,12 @@ class AssignAction(object):
 
     def get_all_condition(self, t=1):
         for i in itertools.permutations(self.item_ids, t):
-            yield self.start_point.add_raw_assign(((), (i, )))
+            yield self.start_point.add_raw_assign(((), (i,)))
 
     def get_action_seq_index(self, conditions):
         return [n for n, a in enumerate(self.all_action_seq) if a.startswith(conditions)]
+
+
+class MoveAction(object):
+    def __init__(self):
+        self.actions = np.array([[1, 0], [0, -1], [0, 1], [-1, 0]])

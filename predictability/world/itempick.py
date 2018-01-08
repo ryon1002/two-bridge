@@ -24,21 +24,31 @@ class ItemPickWorld(object):
         self.reward = rewardtype.RewardWeight(self, reward)
 
         self._r_assign_reward = None
+        self._p_assign__reward = None
+        self._p_item__reward = None
 
     @property
     def r_assign_reward(self):
         if self._r_assign_reward is None:
-            self.r_assign_reward = "Dummy"
+            self._r_assign_reward = np.array(
+                [[self._ordered_assign_cost(a, r) for a in self.assign_action.all_action_seq]
+                 for r in self.reward.get_all_rewards()]).T
         return self._r_assign_reward
 
-    @r_assign_reward.setter
-    def r_assign_reward(self, _):
-        self._r_assign_reward = np.array(
-            [[self._ordered_assign_cost(a, r) for a in self.assign_action.all_action_seq]
-             for r in self.reward.get_all_rewards()]).T
+    @property
+    def p_assign__reward(self):
+        if self._p_assign__reward is None:
+            self._p_assign__reward = probutil.make_prob_2d_dist(self.r_assign_reward, 0)
+        return self._p_assign__reward
 
-    def _prob_assign__reward_dist(self, reward):  # P(A | r)
-        return np.array([self.get_reward(a, reward) for a in self.assign_action.all_action_seq])
+    @property
+    def p_item__reward(self):
+        if self._p_item__reward is None:
+            self._p_item__reward = np.array(
+                [np.sum(self.p_assign__reward[self.assign_action.get_action_seq_index(c)], axis=0)
+                 for c in self.assign_action.get_all_condition(1)])
+            self._p_item_reward = probutil.make_prob_2d_dist(self._p_item__reward, 0)
+        return self._p_item__reward
 
     def _ordered_assign_cost(self, assigns, weight):
         return min(self._single_ordered_assign_cost(assigns.assign[0], weight[0]),
@@ -73,38 +83,28 @@ class ItemPickWorldItem(ItemPickWorld):
         super(ItemPickWorldItem, self).__init__(size, items, human, agent, reward)
         self.action_type = actiontype.AssignAction(self)
 
-    def prob_reward__action_dist(self, beta=1):  # P(r | a)
-        p_r__assign = probutil.make_prob_2d_dist(self.r_assign_reward, 0, beta)  # P(r | As)
-        prob = np.array([np.sum(p_r__assign[self.action_type.get_action_seq_index(c)], axis=0)
-                         for c in self.assign_action.get_all_condition(1)])
-        return probutil.normalized_2d_array(prob, 1)
-
-    def prob_reward__action_dist2(self, beta=1):  # P(r | a)
-        p_r__assign = probutil.make_prob_2d_dist(self.r_assign_reward, 0, beta)  # P(r | As)
-        p_assign__r = probutil.normalized_2d_array(p_r__assign, 1)  # p(As | r)
-        prob = np.zeros((p_assign__r.shape[0], len(self.items)))
-        for i, c in enumerate(self.assign_action.get_all_condition(1)):
-            index = self.action_type.get_action_seq_index(c)
-            p = probutil.normalized_2d_array(p_r__assign[index], axis=0)
-            p = np.sum(p, axis=1) / 3
-            prob[index, i] = p
-        return np.dot(prob.T, p_assign__r)
+    def p_r__a(self, beta=1):  # P(r | a)
+        return probutil.normalized_2d_array(self.p_item__reward, 1)
 
 
 class ItemPickWorldMove(ItemPickWorld):
     def __init__(self, size, items, human, agent, reward=True):
         super(ItemPickWorldMove, self).__init__(size, items, human, agent, reward)
-        self.action_id = {0: np.array([1, 0]), 1: np.array([0, -1]), 2: np.array([0, 1]),
-                          3: np.array([-1, 0])}
-        self.action_type = actiontype.AssignAction(self)
+        self.action_type = actiontype.MoveAction()
 
-    def _cost_after_action(self, pos, action, item):
-        return np.sum(np.abs(pos + self.action_id[action] - np.array(self.items[item])))
+    def _p_move__item(self, item, beta=1):
+        pos = self.agent + self.action_type.actions
+        q = -np.sum(np.abs(pos - np.array(self.items[item])), axis=1)
+        return probutil.make_prob_dist(q, beta)
 
-    def prob_subgoal__action(self, world, beta=1):
-        p_action__subgoal = np.empty((len(world.items), len(world.action_id)))
-        for i in range(len(world.items)):
-            costs = -np.array(
-                [self._cost_after_action(world.agent, a, i) for a in range(len(world.action_id))])
-            p_action__subgoal[i] = probutil.make_prob_dist(costs, beta)
-        return probutil.normalized_2d_array(p_action__subgoal, 0)
+    def _p_item__move(self, beta=1):
+        p_move__item = np.array([self._p_move__item(i, beta) for i in range(len(self.items))])
+        return probutil.normalized_2d_array(p_move__item, 0)
+
+    def p_r__a2(self, beta=1):  # P(r | a)
+        p_item__move = self._p_item__move(beta)
+        p_assign__r = probutil.make_prob_2d_dist(self.r_assign_reward, 0, beta)  # P(r | As)
+        p_a__r = np.array([np.sum(p_assign__r[self.assign_action.get_action_seq_index(c)], axis=0)
+                           for c in self.assign_action.get_all_condition(1)])
+        p_r__item = probutil.normalized_2d_array(p_a__r, 1)
+        return np.dot(p_item__move.T, p_r__item)
